@@ -1,6 +1,7 @@
 import { admins, anyone } from '@/access/roles'
 import { CollectionConfig } from 'payload'
 
+const getTenantForPage = 
 export const Pages: CollectionConfig = {
   slug: 'pages',
   admin: {

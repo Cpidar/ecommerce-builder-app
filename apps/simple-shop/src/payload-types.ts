@@ -239,7 +239,7 @@ export interface User {
   id: number;
   firstName?: string | null;
   lastName?: string | null;
-  roles?: ('admin' | 'customer')[] | null;
+  roles?: ('admin' | 'customer' | 'super-admin')[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;

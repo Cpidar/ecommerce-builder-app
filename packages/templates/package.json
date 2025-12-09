@@ -9,5 +9,7 @@
     "./types": "./types.ts"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*"  }
+    "@measured/puck": "^0.20.2",
+    "@repo/ui": "workspace:*"
+  }
 }

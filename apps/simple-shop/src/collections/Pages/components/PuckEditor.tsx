@@ -6,11 +6,12 @@ import '@measured/puck/puck.css'
 import './PuckEditor.scss'
 import './dark-mode.css'
 import { useEffect, useState } from 'react'
-import { loadTemplatePackage } from '@/lib/loadTemplatePackage'
+import dynamic from "next/dynamic";
+import { TemplateService } from "@/lib/templateService";
 
 const initialData = {}
 
-const PuckEditor = ({ tenant }: { tenant: any }) => {
+const PuckEditor = () => {
   const { value, setValue } = useField<any>({ path: 'page' })
   const { theme } = useTheme()
   const { value: title, setValue: setTitle } = useField<any>({
@@ -19,17 +20,38 @@ const PuckEditor = ({ tenant }: { tenant: any }) => {
   const { value: handle, setValue: setHandle } = useField<any>({
     path: 'handle',
   })
-  const [config, setConfig] = useState(null)
+  const [tenant, setTenant] = useState(null);
+  const [config, setConfig] = useState(null);
 
+
+  // 1️⃣ get tenant from auth session (Payload REST API to /users/me)
   useEffect(() => {
-    async function loadConfig() {
-      const mod = await loadTemplatePackage(tenant.template)
-      setConfig(mod.puckConfig)
-    }
-    loadConfig()
-  }, [tenant.template])
+    async function resolveTenant() {
+      const res = await fetch("/api/users/me", { credentials: "include" });
+      const user = await res.json();
 
-  if (!config) return <p>Loading template editor…</p>
+      // assume user has tenant field or organization reference
+      if (user?.tenant) {
+        const tenantRes = await fetch(`/api/tenants/${user.tenant}`);
+        const t = await tenantRes.json();
+        setTenant(t);
+      }
+    }
+
+    resolveTenant();
+  }, []);
+
+  // 2️⃣ load template package based on tenant.template + tenant.templateVersion
+  useEffect(() => {
+    async function loadCfg() {
+      if (!tenant) return;
+      const cfg = await TemplateService.getPuckConfig(tenant);
+      setConfig(cfg);
+    }
+    loadCfg();
+  }, [tenant]);
+
+  if (!config) return <div>Loading Puck Editor…</div>;
 
   const { submit } = useForm()
   const save = () => {

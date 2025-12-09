@@ -54,6 +54,10 @@ export const Users: CollectionConfig = {
                     label: "customer",
                     value: "customer",
                 },
+                {
+                    label: "super admin",
+                    value: "super-admin",
+                },
             ],
             saveToJWT: true,
         },

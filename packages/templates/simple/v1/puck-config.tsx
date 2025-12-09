@@ -1,5 +1,5 @@
 import { Config } from '@measured/puck'
-import { PuckProps } from './puck-types'
+import { PuckProps } from '../puck-types'
 
 // Import blocks (complex sections/layouts)
 import {

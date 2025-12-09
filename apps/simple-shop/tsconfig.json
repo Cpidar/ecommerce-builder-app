@@ -37,7 +37,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-, "../../packages/templates/default/puck-config.tsx", "../../packages/templates/default/puck-types.ts"  ],
+, "../../packages/templates/simple/v1/puck-config.tsx", "../../packages/templates/simple/puck-types.ts"  ],
   "exclude": [
     "node_modules"
   ],
