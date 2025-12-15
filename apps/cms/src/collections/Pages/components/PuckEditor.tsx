@@ -29,7 +29,7 @@ const PuckEditor: React.FC<any> = ({
   const { value: handle, setValue: setHandle } = useField<any>({
     path: 'handle',
   })
-  const [config, setConfig] = useState(null)
+  const [config, setConfig] = useState({})
 
   // 2️⃣ load template package based on tenant.template + tenant.templateVersion
   useEffect(() => {

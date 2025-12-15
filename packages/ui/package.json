@@ -10,7 +10,8 @@
   "exports": {
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
-    "./blocks/*": "./src/blocks/*.tsx"
+    "./blocks/*": "./src/blocks/*.tsx",
+    "./templates/*": "./src/templates/*"
   },
   "license": "MIT",
   "scripts": {

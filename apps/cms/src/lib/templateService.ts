@@ -1,54 +1,62 @@
 // apps/cms/src/services/TemplateService.ts
-import { loadTemplatePackage } from '../lib/loadTemplatePackage'
-// import { mergeSettingsIntoNode } from '@shared-utils/mergeTemplateSettings'
+import { TemplateID, VersionID } from "@repo/ui/templates/types.js";
+import { loadTemplatePackage } from "../lib/loadTemplatePackage";
+// import { mergeSettingsIntoNode } from "@shared-utils/mergeTemplateSettings";
 
-/**
- * TemplateService handles:
- * - resolving template package by tenant
- * - exposing puck config with component availability
- * - merging template settings
- * - returning default snapshots for new pages
- */
+interface Tenant<T extends TemplateID = TemplateID, V extends VersionID<TemplateID> = VersionID<TemplateID>> {
+  template: T;
+  templateVersion?: V;
+  templateSettings?: Record<string, unknown>;
+}
 
 export const TemplateService = {
-  async load(tenant: any) {
-    const template = tenant.template
-    const version = tenant.templateVersion || 'v1'
-    return await loadTemplatePackage(template, version)
+  // --------------------------------------------
+  // Load template version module for tenant
+  // --------------------------------------------
+  async load<T extends TemplateID, V extends VersionID<T>>(tenant: Tenant<T, V>) {
+    const version = (tenant.templateVersion || "v1") as V;
+    const versions = await loadTemplatePackage(tenant.template, version);
+    return versions;
   },
 
-  async getPuckConfig(tenant: any) {
-    const pkg = await this.load(tenant)
-    const { puckConfig, componentAvailability } = pkg
+  // --------------------------------------------
+  // Produce filtered Puck config
+  // --------------------------------------------
+  async getPuckConfig(tenant: Tenant) {
+    const pkg = await this.load(tenant);
 
-    // filter unavailable components
-    const filteredConfig = {
-      ...puckConfig,
-      components: Object.fromEntries(
-        Object.entries(puckConfig.components).filter(([key]) => {
-          return componentAvailability?.[key] !== false
-        }),
-      ),
+    const { config: puckConfig } = await pkg.puckConfig();
+    const { componentAvailability: availability } = await pkg.componentAvailability();
+
+    if (!puckConfig.components) {
+      console.warn("puckConfig.components is missing");
+      return puckConfig;
     }
 
-    return filteredConfig
+    const availabilityObj = availability ?? {};
+    const filteredComponents = Object.fromEntries(
+      Object.entries(puckConfig.components).filter(([key]) => availabilityObj[key] !== false)
+    );
+
+    return { ...puckConfig, components: filteredComponents };
   },
 
-  async getDefaultPageSnapshot(tenant: any, slug: string) {
-    const pkg = await this.load(tenant)
+  // --------------------------------------------
+  // Load default page snapshot for new page
+  // --------------------------------------------
+  async getDefaultPageSnapshot(tenant: Tenant, slug: string) {
+    const pkg = await this.load(tenant);
 
-    const pages = pkg.pages || {} // package/pages/home.json etc.
-    const base = pages[slug]
+    const pageLoader = pkg.pages?.[slug];
+    if (!pageLoader) return null;
 
-    if (!base) return null
+    const { default: snapshot } = await pageLoader();
+    let tree = structuredClone(snapshot);
 
-    // deep clone
-    let tree = JSON.parse(JSON.stringify(base))
-    let settings = tenant.templateSettings || {}
+    const settings = tenant.templateSettings || {};
+    // tree = mergeSettingsIntoNode(tree, settings);
 
-    // merge tenant-level design settings
-    // tree = mergeSettingsIntoNode(tree, settings)
-
-    return tree
+    return tree;
   },
-}
+
+};

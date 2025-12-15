@@ -3,7 +3,7 @@
  * Which components are exposed to the editor for this template version.
  * true = available, false = hidden / disabled
  */
-export const componentAvailability = {
+export const componentAvailability: { [key: string]: boolean } = {
   Page: true,
   Hero: true,
   Section: true,

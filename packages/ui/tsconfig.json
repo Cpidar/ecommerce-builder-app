@@ -11,6 +11,6 @@
 
     }
   },
-  "include": ["src", "../templates/default/puck-config.tsx", "../templates/default/puck-types.ts"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
